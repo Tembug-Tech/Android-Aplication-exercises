@@ -114,13 +114,16 @@ void main() {
     .where((s) => s.hasScore && s.score! >= 60)
     .toList();
   
+  // Sort passed students by score (highest to lowest)
+  passedStudents.sort((a, b) => b.score!.compareTo(a.score!));
+  
   if (passedStudents.isEmpty) {
     print('No students passed.');
   } else {
-    passedStudents
-      .map((s) => s.name)
-      .toList()
-      .forEach((name) => print('  - $name'));
+    passedStudents.forEach((student) {
+      final grade = calculateGrade(student.score!);
+      print('  - ${student.name}: ${student.score} (Grade: $grade)');
+    });
   }
   print('');
   
@@ -128,31 +131,37 @@ void main() {
   print('--- AVERAGE SCORE ---');
   final average = calculateAverage(students);
   if (average != null) {
-    print('Average score: ${average.toStringAsFixed(2)}');
+    final avgGrade = calculateGrade(average.round());
+    print('Average score: ${average.toStringAsFixed(2)} (Grade: $avgGrade)');
   } else {
     print('No average available (no scores recorded).');
   }
   print('');
   
-  // 4. Print the top student
+  // 4. Print the top student with star highlight
   print('--- TOP STUDENT ---');
   final top = topStudent(students);
   if (top != null) {
     final grade = calculateGrade(top.score!);
-    print('${top.name} with score ${top.score} (Grade: $grade)');
+    print('⭐ ${top.name} with score ${top.score} (Grade: $grade)');
   } else {
     print('No top student available (no scores recorded).');
   }
   print('');
   
-  // 5. Print pass/fail statistics
+  // 5. Print pass/fail statistics with percentages
   print('--- PASS/FAIL STATISTICS ---');
-  final passCount = students.where((s) => s.hasScore && s.score! >= 60).length;
-  final failCount = students.where((s) => s.hasScore && s.score! < 60).length;
+  final studentsWithScores = students.where((s) => s.hasScore).toList();
+  final passCount = studentsWithScores.where((s) => s.score! >= 60).length;
+  final failCount = studentsWithScores.where((s) => s.score! < 60).length;
   final noScoreCount = students.where((s) => !s.hasScore).length;
   
-  print('Students passed: $passCount');
-  print('Students failed: $failCount');
+  final totalWithScores = studentsWithScores.length;
+  final passPercent = totalWithScores > 0 ? (passCount / totalWithScores * 100) : 0.0;
+  final failPercent = totalWithScores > 0 ? (failCount / totalWithScores * 100) : 0.0;
+  
+  print('Students passed: $passCount (${passPercent.toStringAsFixed(1)}%)');
+  print('Students failed: $failCount (${failPercent.toStringAsFixed(1)}%)');
   print('Students with no score: $noScoreCount');
   print('Total students: ${students.length}');
   print('');
